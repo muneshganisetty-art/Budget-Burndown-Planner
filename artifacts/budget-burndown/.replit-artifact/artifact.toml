@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Budget Burndown Planner"
+description = "An annual workforce budget planner for data engineering managers. Manage employees and project budgets, calculate salary projections from hourly rates and employment dates, and track projected budget surplus or deficit."
+version = "1.0.0"
+id = "artifacts/budget-burndown"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22443
+
+[services.development]
+run = "pnpm --filter @workspace/budget-burndown run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/budget-burndown", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/budget-burndown/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22443"
+BASE_PATH = "/"

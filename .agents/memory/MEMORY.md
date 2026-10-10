@@ -1,0 +1,1 @@
+- [Excel workbook data contract](excel-workbook-data.md) — keep the XLSX store private and preserve date-only strings at the API boundary.

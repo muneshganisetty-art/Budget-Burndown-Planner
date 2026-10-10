@@ -1,44 +1,57 @@
-# [Project name]
+# Budget Burndown Planner
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An annual workforce-budget planner for data engineering managers, with an editable roster, annual project allocations, and a projected payroll surplus/deficit view.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server on its managed workflow
+- `pnpm --filter @workspace/budget-burndown run dev` — run the web app on its managed workflow
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Workbook data is kept in the private App Storage bucket. The server creates a workbook with starter rows on first use and migrates an existing local workbook if present.
+- Optional env: `BUDGET_WORKBOOK_PATH` — legacy local workbook path used only for one-time migration
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
+- Data store: ExcelJS workbook in private Replit App Storage
+- Validation: generated Zod schemas
 - API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Frontend: React + Vite, TanStack Query, Wouter
+- Build: esbuild (ESM bundle)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/budget-burndown/src/App.tsx` — dashboard, employee roster, and budget-entry screens
+- `artifacts/budget-burndown/src/index.css` — app visual system and responsive styles
+- `artifacts/api-server/src/lib/budgetWorkbook.ts` — workbook storage and data operations
+- `artifacts/api-server/src/routes/workforce.ts` — employee, budget, and dashboard API
+- `lib/api-spec/openapi.yaml` — source API contract
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The Excel workbook is the source of truth; its `Employees` and `Budgets` sheets hold the editable records.
+- Budget entries include a plan year so allocations can be selected and summed per annual projection.
+- Employee salary projection uses hourly rate × 2,080 hours/year and prorates by active calendar days; accrued spend is an estimate using the same daily rate through today.
+- An employment end date of `9999-12-31` represents ongoing employment.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- View annual budget, accrued payroll estimate, projected payroll, budget balance, and a month-by-month trajectory.
+- Add, update, search, and remove employee records and annual budget entries.
+- Change the projection year; view positive projected balance or deficit against total year funding.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- The user asked for Excel workbook storage rather than a database backend.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Keep the workbook in private App Storage; do not place salary records in a public object path.
+- API `format: date` values must remain `YYYY-MM-DD` strings at the HTTP boundary even though generated Zod schemas coerce them to `Date`.
+- Workbook mutations are serialized within the API process to avoid overwriting concurrent changes.
 
 ## Pointers
 

@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: workforce
+    description: Employee and budget planning
 paths:
   /healthz:
     get:
@@ -24,8 +26,198 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /employees:
+    get:
+      operationId: listEmployees
+      tags: [workforce]
+      summary: List employees
+      responses:
+        "200":
+          description: Employees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Employee"
+    post:
+      operationId: createEmployee
+      tags: [workforce]
+      summary: Add an employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmployeeInput"
+      responses:
+        "201":
+          description: Created employee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /employees/{employeeId}:
+    patch:
+      operationId: updateEmployee
+      tags: [workforce]
+      summary: Update an employee
+      parameters:
+        - $ref: "#/components/parameters/EmployeeId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmployeeUpdate"
+      responses:
+        "200":
+          description: Updated employee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteEmployee
+      tags: [workforce]
+      summary: Remove an employee
+      parameters:
+        - $ref: "#/components/parameters/EmployeeId"
+      responses:
+        "204":
+          description: Employee removed
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /budgets:
+    get:
+      operationId: listBudgets
+      tags: [workforce]
+      summary: List annual budget entries
+      responses:
+        "200":
+          description: Budget entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BudgetEntry"
+    post:
+      operationId: createBudget
+      tags: [workforce]
+      summary: Add a budget entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetInput"
+      responses:
+        "201":
+          description: Created budget entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetEntry"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /budgets/{budgetId}:
+    patch:
+      operationId: updateBudget
+      tags: [workforce]
+      summary: Update a budget entry
+      parameters:
+        - $ref: "#/components/parameters/BudgetId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetUpdate"
+      responses:
+        "200":
+          description: Updated budget entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetEntry"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteBudget
+      tags: [workforce]
+      summary: Delete a budget entry
+      parameters:
+        - $ref: "#/components/parameters/BudgetId"
+      responses:
+        "204":
+          description: Budget entry deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [workforce]
+      summary: Get annual budget projection
+      parameters:
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 2000
+            maximum: 9999
+      responses:
+        "200":
+          description: Annual payroll and budget projection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+        "400":
+          $ref: "#/components/responses/BadRequest"
 components:
+  parameters:
+    EmployeeId:
+      name: employeeId
+      in: path
+      required: true
+      schema:
+        type: string
+    BudgetId:
+      name: budgetId
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Record not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
   schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
     HealthStatus:
       type: object
       properties:
@@ -33,4 +225,88 @@ components:
           type: string
       required:
         - status
+    Employee:
+      type: object
+      required: [employeeId, employeeName, employeeType, hourlyRate, employmentBeginDate, employmentEndDate]
+      properties:
+        employeeId: { type: string }
+        employeeName: { type: string }
+        employeeType: { type: string, enum: [FTE, CNE] }
+        hourlyRate: { type: number, minimum: 0 }
+        employmentBeginDate: { type: string, format: date }
+        employmentEndDate: { type: string, format: date }
+    EmployeeInput:
+      type: object
+      required: [employeeId, employeeName, employeeType, hourlyRate, employmentBeginDate]
+      properties:
+        employeeId: { type: string, minLength: 1 }
+        employeeName: { type: string, minLength: 1 }
+        employeeType: { type: string, enum: [FTE, CNE] }
+        hourlyRate: { type: number, minimum: 0 }
+        employmentBeginDate: { type: string, format: date }
+        employmentEndDate: { type: string, format: date, default: "9999-12-31" }
+    EmployeeUpdate:
+      type: object
+      minProperties: 1
+      properties:
+        employeeName: { type: string, minLength: 1 }
+        employeeType: { type: string, enum: [FTE, CNE] }
+        hourlyRate: { type: number, minimum: 0 }
+        employmentBeginDate: { type: string, format: date }
+        employmentEndDate: { type: string, format: date }
+    BudgetEntry:
+      type: object
+      required: [budgetId, projectId, clarityId, sponsorName, amount, year]
+      properties:
+        budgetId: { type: string }
+        projectId: { type: string }
+        clarityId: { type: string }
+        sponsorName: { type: string }
+        amount: { type: number, minimum: 0 }
+        year: { type: integer, minimum: 2000, maximum: 9999 }
+    BudgetInput:
+      type: object
+      required: [projectId, clarityId, sponsorName, amount, year]
+      properties:
+        projectId: { type: string, minLength: 1 }
+        clarityId: { type: string, minLength: 1 }
+        sponsorName: { type: string, minLength: 1 }
+        amount: { type: number, minimum: 0 }
+        year: { type: integer, minimum: 2000, maximum: 9999 }
+    BudgetUpdate:
+      type: object
+      minProperties: 1
+      properties:
+        projectId: { type: string, minLength: 1 }
+        clarityId: { type: string, minLength: 1 }
+        sponsorName: { type: string, minLength: 1 }
+        amount: { type: number, minimum: 0 }
+        year: { type: integer, minimum: 2000, maximum: 9999 }
+    MonthlyProjection:
+      type: object
+      required: [month, label, projectedSpend, accruedSpend, budget]
+      properties:
+        month: { type: integer, minimum: 1, maximum: 12 }
+        label: { type: string }
+        projectedSpend: { type: number }
+        accruedSpend: { type: number }
+        budget: { type: number }
+    Dashboard:
+      type: object
+      required: [year, annualBudget, projectedPayroll, accruedPayroll, projectedBalance, burnRate, employeeCount, budgetEntries, monthlyProjection, calculationNote]
+      properties:
+        year: { type: integer }
+        annualBudget: { type: number }
+        projectedPayroll: { type: number }
+        accruedPayroll: { type: number }
+        projectedBalance: { type: number }
+        burnRate: { type: number }
+        employeeCount: { type: integer }
+        budgetEntries:
+          type: array
+          items: { $ref: "#/components/schemas/BudgetEntry" }
+        monthlyProjection:
+          type: array
+          items: { $ref: "#/components/schemas/MonthlyProjection" }
+        calculationNote: { type: string }
 
