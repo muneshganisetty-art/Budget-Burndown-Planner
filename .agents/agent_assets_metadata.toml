@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "dBNbRnVJSuWwYhzU3ZmEg"
+uri = "file://project-docs/Budget-Burndown-Project-Workflow.docx"
+type = "word_document"
+title = "Budget Burndown Planner — Project Workflow (.docx)"
+description = "Editable Word document with the project overview, datasets, prompt history, implementation iterations, and workflow learnings."
+logical_id = "42d68f44-8c79-45ae-949c-214cc20a8d70"
+content_hash = "sha256:c7c024ab760b79064c9da1aba754a6e2a12df21b2359cc326b698b37e9cf77cb"
+size = 6272
+mtime_ms = 1791653177023
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:5c2535a9-aadf-4bd7-b276-78c6369f6f1f/42d68f44-8c79-45ae-949c-214cc20a8d70/c7100981-3bbd-422d-aad1-96e8ecb80a8f"
+storage_version_token = "1791653208442021"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
